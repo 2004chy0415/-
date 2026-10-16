@@ -1,5 +1,7 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     public string playerName = "Player";
@@ -10,6 +12,20 @@ public class PlayerController : MonoBehaviour
     public Transform visual;
     public float fallLimit = -10f;
     public int lives = 3;
+    public TMP_Text livesText;
+    public GameObject gameOverPanel;
+    public class SceneLoader : MonoBehaviour
+    {
+        public void LoadScene(string sceneName)
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+        public void ReloadScene()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
     private bool isGameOver = false;
 
     private Vector2 moveInput;
@@ -38,10 +54,22 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Goal"))
+        {
+            Debug.Log("골인!");
+        }
+        else if (other.CompareTag("Trap"))
+        {
+            LoseLife();
+        }
+
+    }
+
 
     void Start()
     {
-
 
 
         if (hp >= 70)
@@ -57,15 +85,9 @@ public class PlayerController : MonoBehaviour
             Debug.Log("위험");
         }
 
-
-
-
-
-
-
         rb = GetComponent<Rigidbody2D>();
         transform.position = startPosition;
-        Debug.Log(playerName + " 시작. 체력 " + hp);
+        livesText.text = "LIFE " + lives;
     }
     void OnMove(InputValue value)
     {
@@ -96,15 +118,10 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.y < fallLimit)
         {
-            lives -= 1;
-            transform.position = startPosition;
-            rb.linearVelocity = Vector2.zero;
-            Debug.Log("낙사. 남은 목숨 " + lives);
-            if (lives <= 0)
             {
-                isGameOver = true;
-                Debug.Log("게임 오버");
+                LoseLife();
             }
+
         }
         if (isGrounded)
         {
@@ -117,5 +134,20 @@ public class PlayerController : MonoBehaviour
         }
 
 
+    }
+
+            void LoseLife()
+            {
+        lives -= 1;
+        transform.position = startPosition;
+        rb.linearVelocity = Vector2.zero;
+        livesText.text = "LIFE " + lives;
+
+        if (lives <= 0)
+                {
+            isGameOver = true;
+            gameOverPanel.SetActive(true);
+
+        }
     }
 }
